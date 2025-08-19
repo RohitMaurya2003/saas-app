@@ -1,7 +1,13 @@
 // middleware.ts
-import { clerkMiddleware } from "@clerk/nextjs/server";
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
-export default clerkMiddleware();
+const isSignInRoute = createRouteMatcher(["/sign-in(.*)"]);
+const isSignUpRoute = createRouteMatcher(["/sign-up(.*)"]);
+const isSubscriptionRoute = createRouteMatcher(["/subscription(.*)"]);
+
+export default clerkMiddleware({
+  publicRoutes: (req) => isSignInRoute(req) || isSignUpRoute(req) || isSubscriptionRoute(req)
+});
 
 export const config = {
   matcher: [
