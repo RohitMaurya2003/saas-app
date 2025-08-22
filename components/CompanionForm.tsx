@@ -1,13 +1,13 @@
 "use client"
 
-import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-
+import { useForm } from "react-hook-form"
+import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import {
     Form,
     FormControl,
+    FormDescription,
     FormField,
     FormItem,
     FormLabel,
@@ -17,87 +17,68 @@ import { Input } from "@/components/ui/input"
 import {
     Select,
     SelectContent,
-    SelectTrigger,
     SelectItem,
-    SelectValue
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select"
-import { subjects } from "@/constants"
-import { Textarea } from "@/components/ui/textarea"
-import {createCompanion, addToSessionHistory} from "@/lib/actions/companion.actioins";
-import {useRouter} from "next/navigation";
+import {subjects} from "@/constants";
+import {Textarea} from "@/components/ui/textarea";
+import {createCompanion} from "@/lib/actions/companion.actions";
+import {redirect} from "next/navigation";
 
-// ✅ Schema with required name & subject
 const formSchema = z.object({
-    companionName: z.string().min(2, {
-        message: "Companion name must be at least 2 characters.",
-    }),
-    subject: z.string().min(1, {
-        message: "Please select a subject.",
-    }),
-    topic: z.string().optional(),
-    voice: z.string().optional(),
-    style: z.string().optional(),
-    duration: z.string().optional(),
+    name: z.string().min(1, { message: 'Companion is required.'}),
+    subject: z.string().min(1, { message: 'Subject is required.'}),
+    topic: z.string().min(1, { message: 'Topic is required.'}),
+    voice: z.string().min(1, { message: 'Voice is required.'}),
+    style: z.string().min(1, { message: 'Style is required.'}),
+    duration: z.coerce.number().min(1, { message: 'Duration is required.'}),
 })
 
-export default function ProfileForm() {
-    const router = useRouter();
+const CompanionForm = () => {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            companionName: "",
-            subject: "",
-            topic: "",
-            voice: "",
-            style: "",
-            duration: "15",
+            name: '',
+            subject: '',
+            topic: '',
+            voice: '',
+            style: '',
+            duration: 15,
         },
     })
-    const onSubmit = async(values: z.infer<typeof formSchema>) => {
-        try {
-            const companion = await createCompanion(values);
-            if(companion){
-                // Add the companion to session history
-                await addToSessionHistory(companion.id);
-                router.push(`/companions/${companion.id}`);
-            }
-            else{
-                console.log("error");
-                router.push('/');
-            }
-        } catch (error) {
-            console.error("Error creating companion:", error);
-            router.push('/');
+
+    const onSubmit = async (values: z.infer<typeof formSchema>) => {
+        const companion = await createCompanion(values);
+
+        if(companion) {
+            redirect(`/companions/${companion.id}`);
+        } else {
+            console.log('Failed to create a companion');
+            redirect('/');
         }
     }
 
     return (
         <Form {...form}>
-            <form
-                onSubmit={form.handleSubmit(
-                    onSubmit,
-                    (errors) => {
-                        console.log("❌ Validation Errors:", errors)
-                    }
-                )}
-                className="space-y-8"
-            >
-                {/* Companion Name (required) */}
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                 <FormField
                     control={form.control}
-                    name="companionName"
+                    name="name"
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Companion name</FormLabel>
                             <FormControl>
-                                <Input placeholder="Enter the companion name" {...field} className="input" />
+                                <Input
+                                    placeholder="Enter the companion name"
+                                    {...field}
+                                    className="input"
+                                />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
                 />
-
-                {/* Subject (required) */}
                 <FormField
                     control={form.control}
                     name="subject"
@@ -108,9 +89,10 @@ export default function ProfileForm() {
                                 <Select
                                     onValueChange={field.onChange}
                                     value={field.value}
+                                    defaultValue={field.value}
                                 >
                                     <SelectTrigger className="input capitalize">
-                                        <SelectValue placeholder="select the subject" />
+                                        <SelectValue placeholder="Select the subject" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {subjects.map((subject) => (
@@ -129,8 +111,6 @@ export default function ProfileForm() {
                         </FormItem>
                     )}
                 />
-
-                {/* Topic */}
                 <FormField
                     control={form.control}
                     name="topic"
@@ -138,14 +118,17 @@ export default function ProfileForm() {
                         <FormItem>
                             <FormLabel>What should the companion help with?</FormLabel>
                             <FormControl>
-                                <Textarea placeholder="Ex. Derivatives & Integrals" {...field} className="input" />
+                                <Textarea
+                                    placeholder="Ex. Derivates & Integrals"
+                                    {...field}
+                                    className="input"
+                                />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
                 />
 
-                {/* Voice (default = male) */}
                 <FormField
                     control={form.control}
                     name="voice"
@@ -156,13 +139,20 @@ export default function ProfileForm() {
                                 <Select
                                     onValueChange={field.onChange}
                                     value={field.value}
+                                    defaultValue={field.value}
                                 >
                                     <SelectTrigger className="input">
-                                        <SelectValue />
+                                        <SelectValue
+                                            placeholder="Select the voice"
+                                        />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="male">Male</SelectItem>
-                                        <SelectItem value="female">Female</SelectItem>
+                                        <SelectItem value="male">
+                                            Male
+                                        </SelectItem>
+                                        <SelectItem value="female">
+                                            Female
+                                        </SelectItem>
                                     </SelectContent>
                                 </Select>
                             </FormControl>
@@ -170,8 +160,6 @@ export default function ProfileForm() {
                         </FormItem>
                     )}
                 />
-
-                {/* Style (default = formal) */}
                 <FormField
                     control={form.control}
                     name="style"
@@ -182,13 +170,20 @@ export default function ProfileForm() {
                                 <Select
                                     onValueChange={field.onChange}
                                     value={field.value}
+                                    defaultValue={field.value}
                                 >
                                     <SelectTrigger className="input">
-                                        <SelectValue />
+                                        <SelectValue
+                                            placeholder="Select the style"
+                                        />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="formal">Formal</SelectItem>
-                                        <SelectItem value="casual">Casual</SelectItem>
+                                        <SelectItem value="formal">
+                                            Formal
+                                        </SelectItem>
+                                        <SelectItem value="casual">
+                                            Casual
+                                        </SelectItem>
                                     </SelectContent>
                                 </Select>
                             </FormControl>
@@ -197,13 +192,12 @@ export default function ProfileForm() {
                     )}
                 />
 
-                {/* Duration */}
                 <FormField
                     control={form.control}
                     name="duration"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Estimated session duration (minutes)</FormLabel>
+                            <FormLabel>Estimated session duration in minutes</FormLabel>
                             <FormControl>
                                 <Input
                                     type="number"
@@ -216,9 +210,10 @@ export default function ProfileForm() {
                         </FormItem>
                     )}
                 />
-
-                <Button type="submit">Build your own companion</Button>
+                <Button type="submit" className="w-full cursor-pointer">Build Your Companion</Button>
             </form>
         </Form>
     )
 }
+
+export default CompanionForm

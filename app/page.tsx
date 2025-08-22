@@ -1,8 +1,8 @@
 import React from 'react'
 import {Button} from "@/components/ui/button";
 import CompanionCard from "@/components/CompanionCard";
-import Cta from "@/components/Cta";
-import CompanionList from "@/components/CompanionList";
+import CTA from "@/components/CTA";
+import CompanionList from "@/components/CompanionsList";
 import {recentSessions} from "@/constants";
 
 const Page = () => {
@@ -17,8 +17,7 @@ const Page = () => {
                 topic="Neural Network of the brain"
                 subject="scince"
                 duration={45}
-                color="#ffda6e"
-
+                color="#ffda6e" bookmarked={false}
             />
             <CompanionCard
                 id="456"
@@ -26,7 +25,7 @@ const Page = () => {
                 topic="Derivatives & Integrals"
                 subject="math"
                 duration={30}
-                color="#e5d0ff"
+                color="#e5d0ff" bookmarked={false}
 
             />
             <CompanionCard
@@ -35,7 +34,7 @@ const Page = () => {
                 topic="Language"
                 subject="English Literature"
                 duration={30}
-                color="#BDE7FF"
+                color="#BDE7FF" bookmarked={false}
 
             />
 
@@ -47,9 +46,9 @@ const Page = () => {
             <CompanionList
             title="Recently completed sessions"
             companions={recentSessions}
-            className="w-2/3 max-lg:w-full"
+            classNames="w-2/3 max-lg:w-full"
             />
-            <Cta/>
+            <CTA/>
         </section>
     </main>
   )
